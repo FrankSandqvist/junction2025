@@ -57,9 +57,10 @@ The response must include these properties:
 - musicTheme (very short, music genre, ignore platform)
 Avoid mentioning gameboy, chiptune or 8-bit, that's added automatically.
 
-- bitmaps (array of {id,width,height,subject})
+- bitmaps (array of {id,width,height,subject,frames?,animationDescription?})
 You can make bitmaps for sprites and backgrounds, be creative.
 Avoid making them smaller than 16x16 pixels. Make sure to use the full canvas for interesting graphics.
+If its for an animation, include a "frames" property with number of frames, and "animationDescription". No more than 4 frames per bitmap.
 
 - sfx (array of {id,description}, max length 3)
 The sound effects should work for gameboy, but can also include simple crunchy samples.
@@ -85,6 +86,8 @@ This is the article: ${randomWikipediaArticle.extract}`;
                     width: { type: "number" },
                     height: { type: "number" },
                     subject: { type: "string" },
+                    frames: { type: "number" },
+                    animationDescription: { type: "string" },
                   },
                   required: ["id", "width", "height", "subject"],
                 },
@@ -146,11 +149,11 @@ This is the article: ${randomWikipediaArticle.extract}`;
           const coverPromise = new Promise<void>(async (res, rej) => {
             const coverResult = await openAi.images.generate({
               model: "gpt-image-1-mini",
-              prompt: `Art for a game. It should have a dark background with stark thin white lines for the subject. Do not write text.
+              prompt: `Decorative art for a game. It should have a dark background with stark thin white lines for the subject. 
+              
+IMPORTANT: NO TEXT!
 
-Title: ${plan.title}
-
-Game: ${plan}.`,
+This is some information about the game for inspiration: ${plan}.`,
               size: "1024x1024",
               background: "opaque",
             });
@@ -174,8 +177,10 @@ Game: ${plan}.`,
 IMPORTANT: JUST RETURN THE INNER CODE OF THE FUNCTION. IT NEEDS TO BE PARSEABLE BY "new Function()". NO MARKDOWN TICKS, NO EXTRA TEXT AROUND IT.
 
 Graphics:
-The canvas is 320w x 288h, palette 4 grayscale. Make sure you make full use of the canvas! 
-Important: The source bitmap files are twice the size ase they will appear in-game (remember to scaled down 2x when drawn).
+The canvas is 320w x 288h, palette 4 grayscale. Make sure you make full use of your real estate! 
+Important: Scale the bitmap down to the specified size when drawing to the canvas. 
+Some bitmaps may have multiple frames for animation (separate images denoted with "frame-x" postfix), use them if relevant.
+DO NOT USE SPRITEMAPS.
 
 Code:
 Assume no other code exists, except for the canvas and standard javascript.
@@ -186,8 +191,17 @@ The only interface outwards is a global window.gameLoopAPI described as:
 - window.gameLoopAPI.getCanvas(): HTMLCanvasElement - Get the canvas to draw the game on.
 - window.gameLoopAPI.buttonState: Record<string, boolean> - Button states. They are "A", "B", "UP", "DOWN", "LEFT", "RIGHT"
 - window.gameLoopAPI.getBitmap(string): HTMLImageElement - get a bitmap HTML element. Bitmap IDs available: ${plan.bitmaps
-              .map((b: any) => `${b.id} (target size ${b.width}w x ${b.height}h px)`)
-              .join(", ")}.
+              .flatMap((b: any) =>
+                JSON.stringify(
+                  b.frames && b.frames > 1
+                    ? new Array(b.frames)
+                        .fill(null)
+                        .map((_, i) => `${b.id}-frame-${i}`)
+                    : [b.id]
+                )
+              )
+              .join("\n")}
+
 - window.gameLoopAPI.playSound(string): void - play a sound effect by their ID. Sound effect IDs available: ${plan.sfx
               .map((s: any) => s.id)
               .join(", ")}.
@@ -197,7 +211,7 @@ This is the game plan to code: ${plan.gameIdea}.`;
             console.log(codePrompt);
 
             const codeResp = await ai.models.generateContent({
-              model: "gemini-2.5-flash",
+              model: "gemini-2.5-pro",
               contents: [{ text: codePrompt }],
             });
 
@@ -211,38 +225,56 @@ This is the game plan to code: ${plan.gameIdea}.`;
           });
 
           const bitmapPromise = new Promise<void>(async (res, rej) => {
-            const bitmapBuffers: { id: string; buffer: Buffer }[] = [];
             if (plan.bitmaps.length > 0) {
               const bitmapPromises = plan.bitmaps.map(async (b: any) => {
                 try {
                   const img = await openAi.images.generate({
                     model: "gpt-image-1-mini",
-                    prompt: `Gameboy-style bitmap of ${b.subject}. Use 4-shade grayscale suitable for Gameboy, transparent background when relevant.`,
+                    prompt: `Gameboy-style bitmap of ${
+                      b.subject
+                    }. Use 4-shade grayscale suitable for Gameboy, transparent background when relevant
+
+${
+  b.frames && b.frames > 1
+    ? `Your task is to generate singular frames of an animation (${b.frames} in total). Make sure the frames clearly show the animation: ${b.animationDescription}`
+    : ""
+}`,
                     size: "1024x1024",
                     background: "auto",
+                    n: b.frames ? b.frames : 1,
                   });
-                  const b64 = img.data?.[0]?.b64_json;
-                  const buf = b64
-                    ? Buffer.from(b64, "base64")
-                    : Buffer.from("");
-                  const png = await sharp(buf)
-                    .trim()
-                    .resize(b.width * 4, b.height * 4)
-                    .png()
-                    .toBuffer();
+                  if (!img.data) {
+                    res();
+                    return;
+                  }
+                  for (
+                    let f = 0;
+                    f < (img.data.length ? img.data.length : 1);
+                    f++
+                  ) {
+                    const frameB64 = img.data?.[f]?.b64_json;
+                    const buf = Buffer.from(frameB64!, "base64");
 
-                  await put(`${gameId}-bitmap-${b.id}.png`, png, {
-                    access: "public",
-                  });
+                    const png = await sharp(buf)
+                      .trim()
+                      .resize(b.width * 4, b.height * 4)
+                      .png()
+                      .toBuffer();
 
-                  return { id: b.id, buffer: png };
+                    await put(
+                      `${gameId}-bitmap-${b.id}${
+                        img.data.length > 1 ? `-frame-${f}` : ""
+                      }.png`,
+                      png,
+                      {
+                        access: "public",
+                      }
+                    );
+                  }
                 } catch (err: any) {
                   return { id: b.id, buffer: Buffer.from("") };
                 }
               });
-
-              const results = await Promise.all(bitmapPromises);
-              bitmapBuffers.push(...results);
             }
 
             push({ bitmapsComplete: true });

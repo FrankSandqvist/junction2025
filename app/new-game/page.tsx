@@ -3,11 +3,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { CheckIcon, Loader } from "lucide-react";
+import {
+  CheckIcon,
+  CodeIcon,
+  GamepadIcon,
+  ImageIcon,
+  Loader,
+  SpeakerIcon,
+} from "lucide-react";
 
 export default function NewGamePage() {
-  const [running, setRunning] = useState(false);
-  const [logs, setLogs] = useState<any[]>([]);
   const [status, setStatus] = useState<any>({
     wikipediaFetched: false,
     wikipediaArticle: null,
@@ -28,8 +33,6 @@ export default function NewGamePage() {
   const router = useRouter();
 
   const start = async () => {
-    setRunning(true);
-
     try {
       const ac = new AbortController();
       controllerRef.current = ac;
@@ -38,7 +41,6 @@ export default function NewGamePage() {
         signal: ac.signal,
       });
       if (!res.body) {
-        setRunning(false);
         return;
       }
 
@@ -56,7 +58,6 @@ export default function NewGamePage() {
           if (!line.trim()) continue;
           try {
             const obj = JSON.parse(line);
-            setLogs((prev) => [...prev, obj]);
             setStatus((s: any) => ({ ...s, ...obj }));
             if (obj.musicTheme) {
               setMusicTheme(obj.musicTheme);
@@ -75,12 +76,11 @@ export default function NewGamePage() {
       } else {
         console.error(err);
       }
-    } finally {
-      setRunning(false);
     }
   };
 
   useEffect(() => {
+    start();
     return () => {
       controllerRef.current?.abort();
     };
@@ -107,24 +107,23 @@ export default function NewGamePage() {
 
   return (
     <div className="p-6 max-w-2xl mx-auto flex flex-col items-stretch gap-6">
-      <h1 className="text-2xl font-semibold mb-4">Create New Game</h1>
-      <button onClick={start} className="text-white">
-        Start
-      </button>
+      <h1 className="text-5xl text-center mb-4 text-teal-200 font-jacquard">
+        New LoreDash
+      </h1>
       <div className="flex gap-4">
-        <div className="border-2 border-teal-200 flex w-full p-4">
+        <div className={`border-2 flex w-full p-4 ${status.wikipediaFetched ? 'border-teal-200/50' : 'border-teal-200 animate-pulse'}`}>
           <div className="grow">
             {status.wikipediaFetched ? (
               <div className="flex flex-col items-start">
-                <div className="font-jacquard text-2xl text-teal-200">
+                <div className="font-jacquard text-6xl text-white -mt-10 drop-shadow-lg">
                   {status.wikipediaArticle}
                 </div>
-                <div className="text-xl text-teal-200">
+                <div className="text-md text-teal-200">
                   {status.wikipediaDescription}
                 </div>
               </div>
             ) : (
-              <div className="font-jacquard text-2xl text-teal-200">
+              <div className="font-jacquard text-3xl text-teal-200">
                 Looking for something interesting...
               </div>
             )}
@@ -153,24 +152,27 @@ export default function NewGamePage() {
       </div>
       <div
         className={`flex flex-col gap-4 duration-500 w-full ${
-          status.wikipediaFetched ? "translate-x-0" : "translate-x-[120%]"
+          status.wikipediaFetched ? "translate-x-0 opacity-100" : "translate-y-full opacity-0"
         }`}
       >
-        <div className="border-2 border-teal-200 flex w-full p-4">
+        <div className="border-2 border-teal-200 flex w-ful items-start p-4">
           {status.planComplete ? (
             <div className="flex flex-col items-start">
-              <div className="font-jacquard text-2xl text-teal-200">
+              <div className="font-jacquard text-3xl text-teal-200">
                 {status.title}
               </div>
-              <div className="text-xl text-teal-200">{status.gameIdea}</div>
+              <div className="text-md text-teal-200">{status.gameIdea}</div>
             </div>
           ) : (
-            <div className="font-jacquard text-xl text-teal-200">
-              Let's make a game plan
+            <div className="text-teal-200 text-2xl font-jacquard flex items-center gap-2 grow">
+              <GamepadIcon />
+              <div className="grow">Game rules</div>
+              <Loader className="animate-spin text-teal-200" />
             </div>
           )}
           {status.coverComplete ? (
-            <div className="font-jacquard text-2xl text-teal-200">
+            <div className="relative">
+              <div className="bg-teal-400 mix-blend-color absolute inset-0" />
               <Image
                 src={
                   process.env.NEXT_PUBLIC_BLOB_BASE_URL +
@@ -180,7 +182,7 @@ export default function NewGamePage() {
                 alt="Game Cover"
                 width={128}
                 height={128}
-                className="object-contain h-32"
+                className="object-contain h-32 min-w-32"
               />
             </div>
           ) : (
@@ -189,15 +191,10 @@ export default function NewGamePage() {
         </div>
         <div className="flex flex-row gap-4 ">
           <div className="border-2 border-teal-200 flex w-full p-4">
-            {status.codeComplete ? (
-              <div className="font-jacquard text-2xl text-teal-200">
-                <CheckIcon />
-              </div>
-            ) : (
-              <Loader className="animate-spin text-teal-200" />
-            )}
-          </div>
-          <div className="border-2 border-teal-200 flex w-full p-4">
+            <div className="text-teal-200 text-2xl font-jacquard flex items-center gap-2 grow">
+              <ImageIcon />
+              Bitmaps
+            </div>
             {status.bitmapsComplete ? (
               <div className="font-jacquard text-2xl text-teal-200">
                 <CheckIcon />
@@ -207,6 +204,11 @@ export default function NewGamePage() {
             )}
           </div>
           <div className="border-2 border-teal-200 flex w-full p-4">
+            <div className="text-teal-200 text-2xl font-jacquard flex items-center gap-2 grow">
+              <SpeakerIcon />
+              Sound FX
+            </div>
+
             {status.sfxComplete ? (
               <div className="font-jacquard text-2xl text-teal-200">
                 <CheckIcon />
@@ -214,6 +216,25 @@ export default function NewGamePage() {
             ) : (
               <Loader className="animate-spin text-teal-200" />
             )}
+          </div>
+        </div>
+        <div className="border-2 border-teal-200 flex flex-col w-full p-4">
+          <div className="flex gap-4 items-center">
+            <div className="text-teal-200 text-2xl font-jacquard flex items-center gap-2 grow">
+              <CodeIcon />
+              Coding with Gemini Pro
+            </div>
+
+            {status.codeComplete ? (
+              <div className="font-jacquard text-2xl text-teal-200">
+                <CheckIcon />
+              </div>
+            ) : (
+              <Loader className="animate-spin text-teal-200" />
+            )}
+          </div>
+          <div className="text-teal-200">
+            Be patient, good things take time! This time, up to a minute.
           </div>
         </div>
       </div>
