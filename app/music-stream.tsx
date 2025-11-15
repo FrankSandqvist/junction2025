@@ -36,20 +36,25 @@ export const MusicStream = () => {
       queuedMusic: null,
       setMusicTheme: (text?: string) => {
         if (sessionRef.current) {
+          const setTo =
+          text ??
+          (window as any).musicAPI.queuedMusic ??
+          (window as any).musicAPI.lastSetTo;
+          console.log(setTo);
           sessionRef.current.setWeightedPrompts({
             weightedPrompts: [
               {
-                text:
-                  text ?? (window as any).musicAPI.queuedMusic ?? "menu music",
+                text: setTo,
                 weight: 0.6,
               },
               { text: "videogame", weight: 0.4 },
             ],
           });
+          (window as any).musicAPI.lastSetTo = setTo;
+          setMusicPrompt(setTo);
         } else {
-          (window as any).musicAPI.queuedMusic = musicPrompt;
+          (window as any).musicAPI.queuedMusic = text;
         }
-        setMusicPrompt(text || "menu music");
       },
     };
 

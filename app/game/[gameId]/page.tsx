@@ -39,6 +39,8 @@ export default function GamePage({
     let soundCache: Record<string, HTMLAudioElement> = {};
     let bitmapCache: Record<string, HTMLImageElement> = {};
 
+    console.log(game)
+
     await (window as any).musicAPI.setMusicTheme(game.musicTheme);
     (window as any).gameLoopAPI = {
       state: {},
@@ -96,11 +98,9 @@ export default function GamePage({
       if (e.repeat) return;
       switch (e.key.toLowerCase()) {
         case "arrowup":
-        case "w":
           handleButtonDown("UP");
           break;
         case "arrowdown":
-        case "s":
           handleButtonDown("DOWN");
           break;
         case "arrowleft":
@@ -111,12 +111,10 @@ export default function GamePage({
         case "d":
           handleButtonDown("RIGHT");
           break;
-        case "z":
         case "x":
-        case "j":
           handleButtonDown("B");
           break;
-        case "k":
+        case "z":
         case "\u0020": // space
           handleButtonDown("A");
           break;
@@ -177,7 +175,7 @@ export default function GamePage({
           />
         </div>
       )}
-      <h1 className="font-jacquard text-center text-3xl md:text-5xl text-teal-200 pt-4 md:pt-16 mb-2">
+      <h1 className="font-jacquard text-center text-3xl md:text-5xl text-teal-200 pt-4 md:pt-8 mb-2">
         {gameInfo?.title}
       </h1>
       <button
@@ -193,7 +191,7 @@ export default function GamePage({
             height={40}
           />
         </div>
-        Learn more
+        Learn about {gameInfo?.wikipediaArticle}
       </button>
       <div className="absolute top-0 w-full h-full pointer-events-none">
         <NextImage
@@ -222,15 +220,15 @@ export default function GamePage({
             <GameLoop />
           </div>
           <div className=" bg-linear-to-t from-white to-transparent absolute inset-0 -translate-y-3/4 rotate-12 scale-150 opacity-5" />
-          <div className="text-stone-700 font-jacquard text-center text-2xl pt-2">
+          <div className="text-stone-600 font-jacquard text-center text-2xl pt-2">
             LoreDash
           </div>
         </div>
       </div>
       {/* Controls area */}
-      {<div>{gameInfo?.educationalText}</div>}
-      {<div>{gameInfo?.howToPlay}</div>}
-      <div className="absolute bottom-16 left-6 right-6 flex items-end justify-between">
+      {<div className="px-4 text-teal-200 text-sm leading-tight text-center">{gameInfo?.educationalText}</div>}
+      {<div className="px-4 text-teal-200/50 text-sm leading-tight text-center">{gameInfo?.howToPlay}</div>}
+      <div className="absolute bottom-16 left-6 right-6 flex items-end justify-around">
         {/* D-PAD */}
         <div className="w-32 h-32 relative">
           <button
@@ -272,7 +270,7 @@ export default function GamePage({
         </div>
 
         {/* Buttons A/B */}
-        <div className="flex flex-col items-center gap-4 mr-2">
+        <div className="flex flex-col items-end gap-4 mr-2">
           <div className="flex gap-4 items-center">
             <button
               onMouseDown={() => handleButtonDown("b")}
@@ -298,8 +296,8 @@ export default function GamePage({
             </button>
           </div>
 
-          <div className="text-xs text-stone-600 dark:text-stone-400">
-            A: K / Space, B: Z / J
+          <div className="text-xs text-teal-200/50">
+            Or use your keyboard! A = Z, B = X
           </div>
         </div>
       </div>

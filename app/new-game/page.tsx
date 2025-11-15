@@ -129,7 +129,7 @@ export default function NewGamePage() {
             )}
           </div>
           <div className="relative">
-            <div className="bg-teal-400 mix-blend-color absolute inset-0" />
+            <div className="bg-teal-400 mix-blend-color-burn absolute inset-0" />
             {status.wikipediaThumbnail ? (
               <Image
                 src={status.wikipediaThumbnail}
