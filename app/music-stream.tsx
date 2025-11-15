@@ -11,7 +11,7 @@ const model = "lyria-realtime-exp";
 
 type PlaybackState = "stopped" | "playing" | "loading" | "paused";
 
-export const MusicStream = ({ initialPrompt }: { initialPrompt: string }) => {
+export const MusicStream = () => {
   const [playbackState, setPlaybackState] = useState<PlaybackState>("stopped");
   const sessionRef = useRef<LiveMusicSession | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -23,6 +23,26 @@ export const MusicStream = ({ initialPrompt }: { initialPrompt: string }) => {
 
   useEffect(() => {
     // Create AudioContext lazily when component mounts
+    (window as any).musicAPI = {
+      queuedMusic: null,
+      setMusicTheme: (text?: string) => {
+        if (sessionRef.current) {
+          sessionRef.current.setWeightedPrompts({
+            weightedPrompts: [
+              {
+                text:
+                  text ?? (window as any).musicAPI.queuedMusic ?? "menu music",
+                weight: 0.5,
+              },
+              { text: "gameboy music", weight: 0.5 },
+            ],
+          });
+        } else {
+          (window as any).musicAPI.queuedMusic = text;
+        }
+      },
+    };
+
     audioCtxRef.current = new (window.AudioContext ||
       (window as any).webkitAudioContext)({ sampleRate });
     outputGainRef.current = audioCtxRef.current.createGain();
@@ -117,19 +137,10 @@ export const MusicStream = ({ initialPrompt }: { initialPrompt: string }) => {
     return session;
   }
 
-  async function setPromptText(text: string) {
-    await sessionRef.current?.setWeightedPrompts({
-      weightedPrompts: [
-        { text, weight: 0.5 },
-        { text: "chiptune music", weight: 0.5 },
-      ],
-    });
-  }
-
   async function handlePlay() {
     try {
       await connectToSession();
-      await setPromptText(initialPrompt);
+      await (window as any).musicAPI.setMusicTheme();
       await audioCtxRef.current?.resume();
       sessionRef.current?.play();
       setPlaybackState("loading");
@@ -144,15 +155,8 @@ export const MusicStream = ({ initialPrompt }: { initialPrompt: string }) => {
     setPlaybackState("paused");
   }
 
-  useEffect(() => {
-    setPromptText(initialPrompt);
-  }, [initialPrompt]);
-
   return (
-    <div
-      style={{ display: "flex", gap: 12, alignItems: "center" }}
-      className="absolute left-0 -top-12"
-    >
+    <div className="fixed right-2 bottom-2 flex">
       {playbackState === "playing" ? (
         <button
           onClick={handlePause}
