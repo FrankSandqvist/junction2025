@@ -160,7 +160,7 @@ export const MusicStream = () => {
   async function handlePlay() {
     try {
       await connectToSession();
-      //await (window as any).musicAPI.setMusicTheme();
+      await (window as any).musicAPI.setMusicTheme();
       await audioCtxRef.current?.resume();
       sessionRef.current?.play();
       setPlaybackState("loading");
