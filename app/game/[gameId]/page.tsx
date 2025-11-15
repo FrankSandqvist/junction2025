@@ -234,7 +234,6 @@ export default function GamePage({
         {/* D-PAD */}
         <div className="w-32 h-32 relative">
           <button
-            aria-label="up"
             onMouseDown={() => handleButtonDown("up")}
             onMouseUp={() => handleButtonUp("up")}
             className={`absolute left-1/2 -translate-x-1/2 top-0 w-12 h-12 rounded bg-stone-300 dark:bg-stone-800 active:scale-95 transform transition-transform ${
@@ -242,7 +241,6 @@ export default function GamePage({
             }`}
           />
           <button
-            aria-label="down"
             onMouseDown={() => handleButtonDown("down")}
             onMouseUp={() => handleButtonUp("down")}
             className={`absolute left-1/2 -translate-x-1/2 bottom-0 w-12 h-12 rounded bg-stone-300 dark:bg-stone-800 active:scale-95 transform transition-transform ${
@@ -250,7 +248,6 @@ export default function GamePage({
             }`}
           />
           <button
-            aria-label="left"
             onMouseDown={() => handleButtonDown("left")}
             onMouseUp={() => handleButtonUp("left")}
             className={`absolute top-1/2 -translate-y-1/2 left-0 w-12 h-12 rounded bg-stone-300 dark:bg-stone-800 active:scale-95 transform transition-transform ${
@@ -258,7 +255,6 @@ export default function GamePage({
             }`}
           />
           <button
-            aria-label="right"
             onMouseDown={() => handleButtonDown("right")}
             onMouseUp={() => handleButtonUp("right")}
             className={`absolute top-1/2 -translate-y-1/2 right-0 w-12 h-12 rounded bg-stone-300 dark:bg-stone-800 active:scale-95 transform transition-transform ${
@@ -273,7 +269,6 @@ export default function GamePage({
         <div className="flex flex-col items-center gap-4 mr-2">
           <div className="flex gap-4 items-center">
             <button
-              aria-label="b"
               onMouseDown={() => handleButtonDown("b")}
               onMouseUp={() => handleButtonUp("b")}
               className={`w-14 h-14 rounded-full bg-red-500 shadow-lg text-white active:scale-95 transform transition-transform ${
@@ -283,7 +278,6 @@ export default function GamePage({
               B
             </button>
             <button
-              aria-label="a"
               onMouseDown={() => handleButtonDown("a")}
               onMouseUp={() => handleButtonDown("a")}
               className={`w-14 h-14 rounded-full bg-green-600 shadow-lg text-white active:scale-95 transform transition-transform ${

@@ -9,3 +9,8 @@ body {
   font-smooth: never !important;
   -webkit-font-smoothing: none;
 }
+
+* {
+  -webkit-user-select: none;
+  user-select: none;
+}
