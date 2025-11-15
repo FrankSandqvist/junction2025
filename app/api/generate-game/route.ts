@@ -153,7 +153,7 @@ This is the article: ${randomWikipediaArticle.extract}`;
               
 IMPORTANT: NO TEXT!
 
-This is some information about the game for inspiration: ${plan}.`,
+This is some information about the game for inspiration: ${randomWikipediaArticle.description} ${plan.gameIdea}.`,
               size: "1024x1024",
               background: "opaque",
             });

@@ -1,6 +1,7 @@
 "use client";
 
 import { GameLoop } from "@/components/GameLoop";
+import { XIcon } from "lucide-react";
 import NextImage from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -11,6 +12,7 @@ export default function GamePage({
 }) {
   const [gameInfo, setGameInfo] = useState<any>(null);
   const [pressed, setPressed] = useState<Record<string, boolean>>({});
+  const [wikipediaPageOpen, setWikipediaPageOpen] = useState<string | null>(null);
 
   useEffect(() => {
     loadGame();
@@ -157,20 +159,58 @@ export default function GamePage({
     };
   }, []);
   return (
-    <div className="relative h-full p-6 max-w-xl mx-auto bg-black/20">
-      {gameInfo?.title}
-      <h1 className="font-jacquard text-center text-5xl text-teal-200">Test</h1>
-      <NextImage
-        unoptimized
-        src={
-          process.env.NEXT_PUBLIC_BLOB_BASE_URL + `${gameInfo?.id}-cover.png`
-        }
-        alt="Game Cover"
-        fill
-        className="absolute top-0 w-full h-full object-top object-contain opacity-10 pointer-events-none mix-blend-dodge"
-      />
-      <div className="relative bg-black px-8 py-8 z-10 overflow-hidden">
-        <GameLoop />
+    <div className="relative h-full p-6 max-w-xl mx-auto bg-black/20 flex flex-col items-center">
+      {
+        wikipediaPageOpen && (
+          <div className="absolute inset-0 max-h-screen bg-black/50 z-50 overflow-auto">
+            <button
+              className="mb-4 text-teal-200"
+              onClick={() => setWikipediaPageOpen(null)}
+            >
+              <XIcon/>
+            </button>
+            <iframe
+              src={wikipediaPageOpen}
+              className="absolute w-full h-full rounded-xl"
+              title="Wikipedia Page"
+            />
+          </div>
+        )
+      }
+      <h1 className="font-jacquard text-center text-5xl text-teal-200 pt-16 mb-2">
+        {gameInfo?.title}
+      </h1>
+      <button className="font-jacquard text-teal-200 text-2xl flex gap-4 mb-14 group hover:text-white duration-300 cursor-pointer" onClick={() => setWikipediaPageOpen(gameInfo.wikipediaUrl)}>
+        <div className="relative">
+          <div className="bg-teal-400 mix-blend-color absolute inset-0 duration-300 group-hover:opacity-0"/>
+          <NextImage
+            src="/wikipedia.svg"
+            alt="Wikipedia Logo"
+            width={40}
+            height={40}
+          />
+        </div>
+        Learn more
+      </button>
+      <div className="absolute top-0 w-full h-full pointer-events-none">
+        <NextImage
+          unoptimized
+          src={
+            process.env.NEXT_PUBLIC_BLOB_BASE_URL + `${gameInfo?.id}-cover.png`
+          }
+          alt="Game Cover"
+          fill
+          style={{
+            objectPosition: "0% -50%",
+          }}
+          className="absolute top-0 w-full h-full object-contain opacity-10 mix-blend-dodge"
+        />{" "}
+        <div className="absolute inset-0 bg-teal-600 mix-blend-color" />
+      </div>
+      <div className="relative bg-black px-8 py-8 z-10 overflow-hidden rounded-xl">
+        <div className="shadow-lg shadow-teal-700/50">
+          <GameLoop />
+        </div>
         <div className=" bg-linear-to-t from-white to-transparent absolute inset-0 -translate-y-3/4 rotate-12 scale-150 opacity-10" />
         <div className="text-stone-700 font-jacquard text-center text-2xl">
           LoreDash
