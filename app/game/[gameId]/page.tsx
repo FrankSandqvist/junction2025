@@ -177,11 +177,11 @@ export default function GamePage({
           />
         </div>
       )}
-      <h1 className="font-jacquard text-center text-5xl text-teal-200 pt-16 mb-2">
+      <h1 className="font-jacquard text-center text-3xl md:text-5xl text-teal-200 pt-4 md:pt-16 mb-2">
         {gameInfo?.title}
       </h1>
       <button
-        className="font-jacquard text-teal-200 text-2xl flex gap-4 mb-14 group hover:text-white duration-300 cursor-pointer"
+        className="font-jacquard text-teal-200 text-2xl flex gap-4 mb-4 md:mb-14 group hover:text-white duration-300 cursor-pointer"
         onClick={() => setWikipediaPageOpen(gameInfo.wikipediaUrl)}
       >
         <div className="relative">
@@ -217,7 +217,7 @@ export default function GamePage({
         >
           <ChevronLeftIcon />
         </button>
-        <div className="relative bg-black pt-8 pb-4 px-8 z-10 overflow-hidden rounded-xl">
+        <div className="relative bg-black pt-4 md:pt-8 pb-2 md:pb-4 px-4 md:px-8 z-10 overflow-hidden rounded-xl">
           <div className="shadow-lg shadow-teal-700/50">
             <GameLoop />
           </div>
@@ -230,39 +230,45 @@ export default function GamePage({
       {/* Controls area */}
       {<div>{gameInfo?.educationalText}</div>}
       {<div>{gameInfo?.howToPlay}</div>}
-      <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
+      <div className="absolute bottom-16 left-6 right-6 flex items-end justify-between">
         {/* D-PAD */}
         <div className="w-32 h-32 relative">
           <button
             onMouseDown={() => handleButtonDown("up")}
             onMouseUp={() => handleButtonUp("up")}
-            className={`absolute left-1/2 -translate-x-1/2 top-0 w-12 h-12 rounded bg-stone-300 dark:bg-stone-800 active:scale-95 transform transition-transform ${
+            onTouchStart={() => handleButtonDown("up")}
+            onTouchEnd={() => handleButtonUp("up")}
+            className={`absolute left-1/2 -translate-x-1/2 top-0 w-12 h-12 rounded-t-xl border-2 border-teal-200 active:scale-95 transform transition-transform ${
               pressed["up"] ? "scale-95" : ""
             }`}
           />
           <button
             onMouseDown={() => handleButtonDown("down")}
             onMouseUp={() => handleButtonUp("down")}
-            className={`absolute left-1/2 -translate-x-1/2 bottom-0 w-12 h-12 rounded bg-stone-300 dark:bg-stone-800 active:scale-95 transform transition-transform ${
+            onTouchStart={() => handleButtonDown("down")}
+            onTouchEnd={() => handleButtonUp("down")}
+            className={`absolute left-1/2 -translate-x-1/2 bottom-0 w-12 h-12 rounded-b-xl border-2 border-teal-200 active:scale-95 transform transition-transform ${
               pressed["down"] ? "scale-95" : ""
             }`}
           />
           <button
             onMouseDown={() => handleButtonDown("left")}
             onMouseUp={() => handleButtonUp("left")}
-            className={`absolute top-1/2 -translate-y-1/2 left-0 w-12 h-12 rounded bg-stone-300 dark:bg-stone-800 active:scale-95 transform transition-transform ${
+            onTouchStart={() => handleButtonDown("left")}
+            onTouchEnd={() => handleButtonUp("left")}
+            className={`absolute top-1/2 -translate-y-1/2 left-0 w-12 h-12 rounded-l-xl border-2 border-teal-200 active:scale-95 transform transition-transform ${
               pressed["left"] ? "scale-95" : ""
             }`}
           />
           <button
             onMouseDown={() => handleButtonDown("right")}
             onMouseUp={() => handleButtonUp("right")}
-            className={`absolute top-1/2 -translate-y-1/2 right-0 w-12 h-12 rounded bg-stone-300 dark:bg-stone-800 active:scale-95 transform transition-transform ${
+            onTouchStart={() => handleButtonDown("right")}
+            onTouchEnd={() => handleButtonUp("right")}
+            className={`absolute top-1/2 -translate-y-1/2 right-0 w-12 h-12 rounded-r-xl border-2 border-teal-200 active:scale-95 transform transition-transform ${
               pressed["right"] ? "scale-95" : ""
             }`}
           />
-          {/* center pivot */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-stone-400 dark:bg-stone-700 rounded-full shadow-inner" />
         </div>
 
         {/* Buttons A/B */}
@@ -271,16 +277,20 @@ export default function GamePage({
             <button
               onMouseDown={() => handleButtonDown("b")}
               onMouseUp={() => handleButtonUp("b")}
-              className={`w-14 h-14 rounded-full bg-red-500 shadow-lg text-white active:scale-95 transform transition-transform ${
+              onTouchStart={() => handleButtonDown("b")}
+              onTouchEnd={() => handleButtonUp("b")}
+              className={`w-14 h-14 border-2 border-teal-200 text-xl font-semibold text-teal-200 rounded-full active:scale-95 transform transition-transform ${
                 pressed["b"] ? "scale-95" : ""
               }`}
             >
               B
             </button>
             <button
+              onTouchStart={() => handleButtonDown("a")}
+              onTouchEnd={() => handleButtonDown("a")}
               onMouseDown={() => handleButtonDown("a")}
               onMouseUp={() => handleButtonDown("a")}
-              className={`w-14 h-14 rounded-full bg-green-600 shadow-lg text-white active:scale-95 transform transition-transform ${
+              className={`w-14 h-14 border-2 border-teal-200 text-xl font-semibold text-teal-200 rounded-full active:scale-95 transform transition-transform ${
                 pressed["a"] ? "scale-95" : ""
               }`}
             >
