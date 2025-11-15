@@ -40,9 +40,10 @@ export const GameLoop = () => {
       <canvas
         ref={canvasRef}
         id="game-canvas"
-        width={160}
-        height={144}
+        width={320}
+        height={288}
         className="w-full block"
+        style={{ imageRendering: "pixelated" }}
       />
     </div>
   );

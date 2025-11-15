@@ -1,7 +1,7 @@
 "use client";
 
 import { GameLoop } from "@/components/GameLoop";
-import Image from "next/image";
+import NextImage from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 
 export default function GamePage({
@@ -30,20 +30,40 @@ export default function GamePage({
 
     setGameInfo(game);
 
+    let limitSound = false;
+
+    let soundCache: Record<string, HTMLAudioElement> = {};
+    let bitmapCache: Record<string, HTMLImageElement> = {};
+
     await (window as any).musicAPI.setMusicTheme(game.musicTheme);
     (window as any).gameLoopAPI = {
+      state: {},
       getCanvas: () => {
         return document.getElementById("game-canvas") as HTMLCanvasElement;
       },
-      getBitmapUrl: (id: string) => {
-        return `${process.env.NEXT_PUBLIC_BLOB_BASE_URL}${gameId}-bitmap-${id}.png`;
+      getBitmap: (id: string) => {
+        if (bitmapCache[id]) return bitmapCache[id];
+
+        const img = new Image();
+        img.src = `${process.env.NEXT_PUBLIC_BLOB_BASE_URL}${gameId}-bitmap-${id}.png`;
+        bitmapCache[id] = img;
+        return img;
       },
       playSound: (id: string) => {
+        if (limitSound) return;
+        if (soundCache[id]) {
+          soundCache[id].currentTime = 0;
+          soundCache[id].play();
+          return;
+        }
         const audio = new Audio(
           `${process.env.NEXT_PUBLIC_BLOB_BASE_URL}${gameId}-sfx-${id}.mp3`
         );
-        audio.volume = 0.5;
+        audio.volume = 0.3;
         audio.play();
+        limitSound = true;
+        setTimeout(() => (limitSound = false), 500);
+        soundCache[id] = audio;
       },
       buttonState: {
         A: false,
@@ -133,25 +153,32 @@ export default function GamePage({
     window.addEventListener("keyup", onKeyUp);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("keydown", onKeyUp);
+      window.removeEventListener("keyup", onKeyUp);
     };
   }, []);
   return (
-    <div className="h-full p-6 max-w-2xl mx-auto bg-black/20">
-      <Image
-      unoptimized
-        src={process.env.NEXT_PUBLIC_BLOB_BASE_URL + `${gameInfo?.id}-cover.png`}
+    <div className="relative h-full p-6 max-w-xl mx-auto bg-black/20">
+      {gameInfo?.title}
+      <h1 className="font-jacquard text-center text-5xl text-teal-200">Test</h1>
+      <NextImage
+        unoptimized
+        src={
+          process.env.NEXT_PUBLIC_BLOB_BASE_URL + `${gameInfo?.id}-cover.png`
+        }
         alt="Game Cover"
         fill
-        className="absolute top-0 w-full h-full object-top object-contain opacity-10 pointer-events-none"
+        className="absolute top-0 w-full h-full object-top object-contain opacity-10 pointer-events-none mix-blend-dodge"
       />
-      {gameInfo?.title}
-
-      <h1 className="font-jacquard text-center text-5xl text-teal-200">Test</h1>
-      
-      <GameLoop />
-
+      <div className="relative bg-black px-8 py-8 z-10 overflow-hidden">
+        <GameLoop />
+        <div className=" bg-linear-to-t from-white to-transparent absolute inset-0 -translate-y-3/4 rotate-12 scale-150 opacity-10" />
+        <div className="text-stone-700 font-jacquard text-center text-2xl">
+          LoreDash
+        </div>
+      </div>
       {/* Controls area */}
+      {<div>{gameInfo?.educationalText}</div>}
+      {<div>{gameInfo?.howToPlay}</div>}
       <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
         {/* D-PAD */}
         <div className="w-32 h-32 relative">

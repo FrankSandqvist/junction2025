@@ -6,6 +6,14 @@ import {
   type LiveMusicSession,
 } from "@google/genai";
 import { decode, decodeAudioData } from "./utils";
+import {
+  LoaderIcon,
+  PauseIcon,
+  PlayIcon,
+  SpeakerIcon,
+  VolumeIcon,
+  VolumeOffIcon,
+} from "lucide-react";
 
 const model = "lyria-realtime-exp";
 
@@ -20,6 +28,7 @@ export const MusicStream = () => {
   const connectionErrorRef = useRef<boolean>(false);
   const bufferTime = 2; // seconds of buffer to allow for latency
   const sampleRate = 48000;
+  const [musicPrompt, setMusicPrompt] = useState<string>("menu music");
 
   useEffect(() => {
     // Create AudioContext lazily when component mounts
@@ -32,14 +41,15 @@ export const MusicStream = () => {
               {
                 text:
                   text ?? (window as any).musicAPI.queuedMusic ?? "menu music",
-                weight: 0.5,
+                weight: 0.6,
               },
-              { text: "gameboy music", weight: 0.5 },
+              { text: "videogame", weight: 0.4 },
             ],
           });
         } else {
-          (window as any).musicAPI.queuedMusic = text;
+          (window as any).musicAPI.queuedMusic = musicPrompt;
         }
+        setMusicPrompt(text || "menu music");
       },
     };
 
@@ -48,8 +58,18 @@ export const MusicStream = () => {
     outputGainRef.current = audioCtxRef.current.createGain();
     outputGainRef.current.connect(audioCtxRef.current.destination);
 
+    const timeout = setTimeout(() => {
+      if (playbackState === "playing" || playbackState === "loading") {
+        // Auto-stop after 5 minutes
+        sessionRef.current?.stop?.();
+        sessionRef.current = null;
+        setPlaybackState("stopped");
+      }
+    }, 1000 * 60 * 5);
+
     return () => {
       // Cleanup: stop session and close audio context
+      clearTimeout(timeout);
       sessionRef.current?.stop?.();
       sessionRef.current = null;
       if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
@@ -156,23 +176,24 @@ export const MusicStream = () => {
   }
 
   return (
-    <div className="fixed right-2 bottom-2 flex">
+    <div className="fixed mx-auto bottom-0 bg-black/60 p-4 rounded-tr-2xl text-white flex">
       {playbackState === "playing" ? (
-        <button
-          onClick={handlePause}
-          className="px-3 py-1 bg-red-600 text-white rounded"
-        >
-          Pause Music
+        <button onClick={handlePause} className="p-2">
+          <VolumeOffIcon />
+        </button>
+      ) : playbackState === "loading" ? (
+        <button disabled className="p-2">
+          <LoaderIcon className="animate-spin" />
         </button>
       ) : (
-        <button
-          onClick={handlePlay}
-          className="px-3 py-1 bg-green-600 text-white rounded"
-        >
-          Play Music
+        <button onClick={handlePlay} className="p-2 ">
+          <VolumeIcon />
         </button>
       )}
-      <div style={{ fontFamily: "sans-serif" }}>Status: {playbackState}</div>
+      <div className="text-sm">
+        <div>Currently playing</div>
+        <div>{musicPrompt}</div>
+      </div>
     </div>
   );
 };

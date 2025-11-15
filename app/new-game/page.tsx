@@ -1,14 +1,20 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { CheckIcon, Loader } from "lucide-react";
 
 export default function NewGamePage() {
   const [running, setRunning] = useState(false);
   const [logs, setLogs] = useState<any[]>([]);
   const [status, setStatus] = useState<any>({
     wikipediaFetched: false,
+    wikipediaArticle: null,
+    wikipediaThumbnail: null,
+    wikipediaDescription: null,
     title: null,
+    gameIdea: null,
     gameId: null,
     coverComplete: false,
     planComplete: false,
@@ -17,22 +23,12 @@ export default function NewGamePage() {
     sfxComplete: false,
     completed: false,
   });
+  const [musicTheme, setMusicTheme] = useState<string>("idle");
   const controllerRef = useRef<AbortController | null>(null);
   const router = useRouter();
 
   const start = async () => {
     setRunning(true);
-    setLogs([]);
-    setStatus((s: any) => ({
-      ...s,
-      wikipediaFetched: false,
-      planComplete: false,
-      coverComplete: false,
-      codeComplete: false,
-      bitmapsComplete: false,
-      sfxComplete: false,
-      completed: false,
-    }));
 
     try {
       const ac = new AbortController();
@@ -61,9 +57,10 @@ export default function NewGamePage() {
           try {
             const obj = JSON.parse(line);
             setLogs((prev) => [...prev, obj]);
-            // merge event flags and metadata into status
             setStatus((s: any) => ({ ...s, ...obj }));
-            // navigate when completed reported
+            if (obj.musicTheme) {
+              setMusicTheme(obj.musicTheme);
+            }
             if (obj.completed && obj.gameId) {
               setTimeout(() => router.push(`/game/${obj.gameId}`), 1200);
             }
@@ -83,11 +80,144 @@ export default function NewGamePage() {
     }
   };
 
-  return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-4">Create New Game</h1>
+  useEffect(() => {
+    return () => {
+      controllerRef.current?.abort();
+    };
+  }, []);
 
-      <button
+  useEffect(() => {
+    const completionCount = Object.values(status).filter(
+      (v) => v === true
+    ).length;
+    (window as any).musicAPI?.setMusicTheme(
+      musicTheme +
+        ": " +
+        {
+          0: "idle",
+          1: "building_tension",
+          2: "tense",
+          3: "action",
+          4: "climax",
+          5: "victory",
+          6: "celebration",
+        }[completionCount]
+    );
+  }, [status, musicTheme]);
+
+  return (
+    <div className="p-6 max-w-2xl mx-auto flex flex-col items-stretch gap-6">
+      <h1 className="text-2xl font-semibold mb-4">Create New Game</h1>
+      <button onClick={start} className="text-white">
+        Start
+      </button>
+      <div className="flex gap-4">
+        <div className="border-2 border-teal-200 flex w-full p-4">
+          <div className="grow">
+            {status.wikipediaFetched ? (
+              <div className="flex flex-col items-start">
+                <div className="font-jacquard text-2xl text-teal-200">
+                  {status.wikipediaArticle}
+                </div>
+                <div className="text-xl text-teal-200">
+                  {status.wikipediaDescription}
+                </div>
+              </div>
+            ) : (
+              <div className="font-jacquard text-2xl text-teal-200">
+                Looking for something interesting...
+              </div>
+            )}
+          </div>
+          <div className="relative">
+            <div className="bg-teal-400 mix-blend-color absolute inset-0" />
+            {status.wikipediaThumbnail ? (
+              <Image
+                src={status.wikipediaThumbnail}
+                alt="Image"
+                width={128}
+                height={128}
+                className="flex-[8rem] h-32 object-cover"
+              />
+            ) : (
+              <Image
+                src="/wikipedia.svg"
+                alt="Wikipedia Logo"
+                width={128}
+                height={128}
+                className="flex-[8rem] h-32"
+              />
+            )}
+          </div>
+        </div>
+      </div>
+      <div
+        className={`flex flex-col gap-4 duration-500 w-full ${
+          status.wikipediaFetched ? "translate-x-0" : "translate-x-[120%]"
+        }`}
+      >
+        <div className="border-2 border-teal-200 flex w-full p-4">
+          {status.planComplete ? (
+            <div className="flex flex-col items-start">
+              <div className="font-jacquard text-2xl text-teal-200">
+                {status.title}
+              </div>
+              <div className="text-xl text-teal-200">{status.gameIdea}</div>
+            </div>
+          ) : (
+            <div className="font-jacquard text-xl text-teal-200">
+              Let's make a game plan
+            </div>
+          )}
+          {status.coverComplete ? (
+            <div className="font-jacquard text-2xl text-teal-200">
+              <Image
+                src={
+                  process.env.NEXT_PUBLIC_BLOB_BASE_URL +
+                  `${status.gameId}-cover.png`
+                }
+                unoptimized
+                alt="Game Cover"
+                width={128}
+                height={128}
+                className="object-contain h-32"
+              />
+            </div>
+          ) : (
+            <Loader className="animate-spin text-teal-200" />
+          )}
+        </div>
+        <div className="flex flex-row gap-4 ">
+          <div className="border-2 border-teal-200 flex w-full p-4">
+            {status.codeComplete ? (
+              <div className="font-jacquard text-2xl text-teal-200">
+                <CheckIcon />
+              </div>
+            ) : (
+              <Loader className="animate-spin text-teal-200" />
+            )}
+          </div>
+          <div className="border-2 border-teal-200 flex w-full p-4">
+            {status.bitmapsComplete ? (
+              <div className="font-jacquard text-2xl text-teal-200">
+                <CheckIcon />
+              </div>
+            ) : (
+              <Loader className="animate-spin text-teal-200" />
+            )}
+          </div>
+          <div className="border-2 border-teal-200 flex w-full p-4">
+            {status.sfxComplete ? (
+              <div className="font-jacquard text-2xl text-teal-200">
+                <CheckIcon />
+              </div>
+            ) : (
+              <Loader className="animate-spin text-teal-200" />
+            )}
+          </div>
+        </div>
+      </div>
+      {/*<button
         className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-60"
         onClick={start}
         disabled={running}
@@ -149,7 +279,7 @@ export default function NewGamePage() {
             </pre>
           </div>
         )}
-      </div>
+      </div>*/}
     </div>
   );
 }
