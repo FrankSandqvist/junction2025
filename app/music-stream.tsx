@@ -37,9 +37,9 @@ export const MusicStream = () => {
       setMusicTheme: (text?: string) => {
         if (sessionRef.current) {
           const setTo =
-          text ??
-          (window as any).musicAPI.queuedMusic ??
-          (window as any).musicAPI.lastSetTo;
+            text ??
+            (window as any).musicAPI.queuedMusic ??
+            (window as any).musicAPI.lastSetTo;
           console.log(setTo);
           sessionRef.current.setWeightedPrompts({
             weightedPrompts: [
@@ -62,6 +62,10 @@ export const MusicStream = () => {
       (window as any).webkitAudioContext)({ sampleRate });
     outputGainRef.current = audioCtxRef.current.createGain();
     outputGainRef.current.connect(audioCtxRef.current.destination);
+
+    setTimeout(() => {
+      handlePlay();
+    }, 1500);
 
     const timeout = setTimeout(() => {
       if (playbackState === "playing" || playbackState === "loading") {
