@@ -63,10 +63,6 @@ export const MusicStream = () => {
     outputGainRef.current = audioCtxRef.current.createGain();
     outputGainRef.current.connect(audioCtxRef.current.destination);
 
-    setTimeout(() => {
-      handlePlay();
-    }, 1500);
-
     const timeout = setTimeout(() => {
       if (playbackState === "playing" || playbackState === "loading") {
         // Auto-stop after 5 minutes
@@ -125,6 +121,11 @@ export const MusicStream = () => {
               if (nextStartTimeRef.current === 0) {
                 nextStartTimeRef.current =
                   audioCtxRef.current!.currentTime + bufferTime;
+
+                setTimeout(
+                  () => setPlaybackState("playing"),
+                  bufferTime * 1000
+                );
               }
 
               if (nextStartTimeRef.current < audioCtxRef.current!.currentTime) {
