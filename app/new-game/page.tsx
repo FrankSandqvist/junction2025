@@ -11,8 +11,10 @@ import {
   Loader,
   SpeakerIcon,
 } from "lucide-react";
+import Link from "next/link";
 
 export default function NewGamePage() {
+  const [error, setError] = useState<boolean>(false);
   const [status, setStatus] = useState<any>({
     wikipediaFetched: false,
     wikipediaArticle: null,
@@ -40,6 +42,10 @@ export default function NewGamePage() {
         method: "POST",
         signal: ac.signal,
       });
+
+      if (res.status !== 200) {
+        setError(true);
+      }
       if (!res.body) {
         return;
       }
@@ -105,13 +111,48 @@ export default function NewGamePage() {
     );
   }, [status, musicTheme]);
 
+  if (error) {
+    return (
+      <div className="p-6 max-w-2xl mx-auto flex flex-col items-stretch gap-6">
+        <h1 className="text-5xl text-center mb-4 text-teal-200 font-jacquard">
+          Error
+        </h1>
+        <div className="text-teal-200 text-center leading.">
+          Sorry, there was an error generating your LoreDash. You may be getting
+          rate limited. AI credits can be pricy 💸
+        </div>
+        <div className="text-teal-200 text-center leading.">
+          Go back to the{" "}
+          <Link href="/" className="text-teal-200 underline mb-2">
+            homepage
+          </Link>
+          .
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 max-w-2xl mx-auto flex flex-col items-stretch gap-6">
       <h1 className="text-5xl text-center mb-4 text-teal-200 font-jacquard">
         New LoreDash
       </h1>
+      <div className="text-teal-200 text-center leading-snug mb-8 text-sm">
+        Impatient? This will run in the background. You can play pre-made games
+        in the{" "}
+        <Link href="/" className="text-teal-200 underline mb-2">
+          Dash Cache
+        </Link>
+        .
+      </div>
       <div className="flex gap-4">
-        <div className={`border-2 flex w-full p-4 ${status.wikipediaFetched ? 'border-teal-200/50' : 'border-teal-200 animate-pulse'}`}>
+        <div
+          className={`border-2 flex w-full p-4 ${
+            status.wikipediaFetched
+              ? "border-teal-200/50"
+              : "border-teal-200 animate-pulse"
+          }`}
+        >
           <div className="grow">
             {status.wikipediaFetched ? (
               <div className="flex flex-col items-start">
@@ -129,7 +170,7 @@ export default function NewGamePage() {
             )}
           </div>
           <div className="relative">
-            <div className="bg-teal-400 mix-blend-color-burn absolute inset-0" />
+            <div className="bg-teal-400 mix-blend-color absolute inset-0" />
             {status.wikipediaThumbnail ? (
               <Image
                 src={status.wikipediaThumbnail}
@@ -152,7 +193,9 @@ export default function NewGamePage() {
       </div>
       <div
         className={`flex flex-col gap-4 duration-500 w-full ${
-          status.wikipediaFetched ? "translate-x-0 opacity-100" : "translate-y-full opacity-0"
+          status.wikipediaFetched
+            ? "translate-x-0 opacity-100"
+            : "translate-y-full opacity-0"
         }`}
       >
         <div className="border-2 border-teal-200 flex w-ful items-start p-4">
@@ -185,9 +228,7 @@ export default function NewGamePage() {
                 className="object-contain h-32 min-w-32"
               />
             </div>
-          ) : (
-            <Loader className="animate-spin text-teal-200" />
-          )}
+          ) : null}
         </div>
         <div className="flex flex-row gap-4 ">
           <div className="border-2 border-teal-200 flex w-full p-4">

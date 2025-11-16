@@ -10,7 +10,7 @@ export const GameLoop = () => {
   // Expose API so the actual game loop can be provided later
   useEffect(() => {
     const runnerTimer = setInterval(() => {
-      (window as any).gameLoopAPI?.tick();
+      (window as any).gameLoopAPI?.tick?.();
     }, 1000 / 30);
 
     return () => {

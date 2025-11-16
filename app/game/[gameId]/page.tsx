@@ -1,8 +1,18 @@
 "use client";
 
+import { listGames } from "@/actions/list-games";
 import { GameLoop } from "@/components/GameLoop";
-import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "lucide-react";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  DicesIcon,
+  HomeIcon,
+  PlusIcon,
+  XIcon,
+} from "lucide-react";
 import NextImage from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 
 export default function GamePage({
@@ -15,6 +25,7 @@ export default function GamePage({
   const [wikipediaPageOpen, setWikipediaPageOpen] = useState<string | null>(
     null
   );
+  const router = useRouter();
 
   useEffect(() => {
     loadGame();
@@ -39,7 +50,7 @@ export default function GamePage({
     let soundCache: Record<string, HTMLAudioElement> = {};
     let bitmapCache: Record<string, HTMLImageElement> = {};
 
-    console.log(game)
+    console.log(game);
 
     await (window as any).musicAPI.setMusicTheme(game.musicTheme);
     (window as any).gameLoopAPI = {
@@ -161,9 +172,9 @@ export default function GamePage({
   return (
     <div className="relative h-full p-6 max-w-xl mx-auto bg-black/20 flex flex-col items-center">
       {wikipediaPageOpen && (
-        <div className="absolute inset-0 max-h-screen bg-black/50 z-50 overflow-auto">
+        <div className="absolute inset-0 max-h-screen bg-black/50 z-50 overflow-auto text-right">
           <button
-            className="mb-4 text-teal-200"
+            className="mb-4 text-teal-200 py-4"
             onClick={() => setWikipediaPageOpen(null)}
           >
             <XIcon />
@@ -209,12 +220,35 @@ export default function GamePage({
         <div className="absolute inset-0 bg-teal-600 mix-blend-color" />
       </div>
       <div className="relative">
-        <button
-          className="absolute -left-4 top-1/2 p-2 text-teal-200 opacity-50 hover:opacity-100 duration-300"
-          onClick={() => {}}
+        <Link
+          className="absolute -left-12 top-1/2 p-2 text-teal-200 opacity-50 hover:opacity-100 duration-300"
+          href="/"
         >
-          <ChevronLeftIcon />
+          <HomeIcon />
+        </Link>
+        <div className="absolute -right-12 top-1/2 flex flex-col items-center gap-4">
+        <button
+          className="p-2 text-teal-200 opacity-50 hover:opacity-100 duration-300"
+          onClick={() => {
+            listGames().then((games) => {
+              // random but not this one
+              const otherGames = games.filter((g: any) => g.id !== gameInfo.id);
+              const randomGame =
+                otherGames[Math.floor(Math.random() * otherGames.length)];
+              router.push(`/game/${randomGame.id}`);
+            });
+          }}
+        >
+          <DicesIcon />
         </button>
+        <Link
+          className="p-2 text-teal-200 opacity-50 hover:opacity-100 duration-300"
+          href="/new-game"
+          prefetch={false}
+        >
+          <PlusIcon />
+        </Link>
+        </div>
         <div className="relative bg-black pt-4 md:pt-8 pb-2 md:pb-4 px-4 md:px-8 z-10 overflow-hidden rounded-xl">
           <div className="shadow-lg shadow-teal-700/50">
             <GameLoop />
@@ -226,8 +260,16 @@ export default function GamePage({
         </div>
       </div>
       {/* Controls area */}
-      {<div className="px-4 text-teal-200 text-sm leading-tight text-center">{gameInfo?.educationalText}</div>}
-      {<div className="px-4 text-teal-200/50 text-sm leading-tight text-center">{gameInfo?.howToPlay}</div>}
+      {
+        <div className="px-4 text-teal-200 text-sm leading-tight text-center">
+          {gameInfo?.educationalText}
+        </div>
+      }
+      {
+        <div className="px-4 text-teal-200/50 text-sm leading-tight text-center">
+          {gameInfo?.howToPlay}
+        </div>
+      }
       <div className="absolute bottom-16 left-6 right-6 flex items-end justify-around">
         {/* D-PAD */}
         <div className="w-32 h-32 relative">
