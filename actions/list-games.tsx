@@ -10,6 +10,6 @@ export const listGames = async () => {
   return await Promise.all(
     games.blobs
       .filter((b) => b.pathname.endsWith(".json"))
-      .map((b) => fetch(b.downloadUrl).then((res) => res.json()))
+      .map((b) => fetch(b.downloadUrl, { cache: 'no-store' }).then((res) => res.json()))
   );
 };
