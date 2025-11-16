@@ -125,11 +125,6 @@ export const MusicStream = () => {
               if (nextStartTimeRef.current === 0) {
                 nextStartTimeRef.current =
                   audioCtxRef.current!.currentTime + bufferTime;
-
-                setTimeout(
-                  () => setPlaybackState("playing"),
-                  bufferTime * 1000
-                );
               }
 
               if (nextStartTimeRef.current < audioCtxRef.current!.currentTime) {
